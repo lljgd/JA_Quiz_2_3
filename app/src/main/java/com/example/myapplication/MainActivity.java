@@ -6,9 +6,12 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Arrays;
+
 public class MainActivity extends LoggingActivity {
 
     private static final String KEY_CURRENT_INDEX = "key_current_index";
+    private static final String KEY_SAVE_ANSWER = "key_save_answer";
 
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_australia, true),
@@ -20,6 +23,10 @@ public class MainActivity extends LoggingActivity {
     };
 
     private int mCurrentIndex = 0;
+    private int allQuestion = mQuestionBank.length;
+    private int[] checkAnswer = new int[allQuestion];
+    private int sumAllAnswer;
+    private int sumTrueAnswer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +35,10 @@ public class MainActivity extends LoggingActivity {
 
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_CURRENT_INDEX);
+            checkAnswer = savedInstanceState.getIntArray(KEY_SAVE_ANSWER);
+        }
+        else {
+            Arrays.fill(checkAnswer, 0);
         }
 
         final TextView questionString = findViewById(R.id.question_string);
@@ -60,20 +71,60 @@ public class MainActivity extends LoggingActivity {
                 questionString.setText(currentQuestion.getQuestionResId());
             }
         });
+
+        Button checkButton = findViewById(R.id.check_button);
+        checkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               sumAllAnswer = 0;
+               sumTrueAnswer = 0;
+               for (int e: checkAnswer) {
+                   if (e != 0) {
+                       sumAllAnswer++;
+                       if (e == 2) {
+                           sumTrueAnswer++;
+                       }
+                   }
+               }
+                StringBuilder sb = new StringBuilder()
+                        .append("Отвечено ")
+                        .append(sumAllAnswer)
+                        .append("\\")
+                        .append(allQuestion)
+                        .append(" вопросов\nПравильных ответов: ")
+                        .append(sumTrueAnswer);
+                String toastCheck = sb.toString();
+
+                Toast.makeText(
+                        MainActivity.this,
+                        toastCheck,
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+        });
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_CURRENT_INDEX, mCurrentIndex);
+        outState.putIntArray(KEY_SAVE_ANSWER, checkAnswer);
     }
 
     private void onButtonClicked(boolean answer) {
         Question currentQuestion = mQuestionBank[mCurrentIndex];
-        int toastMessage = (currentQuestion.isCorrectAnswer() == answer) ?
-                R.string.correct_toast :
-                R.string.incorrect_toast;
-
+        boolean mCheck = (currentQuestion.isCorrectAnswer() == answer);
+        int toastMessage;
+        if (mCheck) {
+            toastMessage = R.string.correct_toast;
+            checkAnswer[mCurrentIndex] = 2;
+        }
+        else {
+            toastMessage = R.string.incorrect_toast;
+            if (checkAnswer[mCurrentIndex] == 0) {
+                checkAnswer[mCurrentIndex] = 1;
+            }
+        }
         Toast.makeText(
                 MainActivity.this,
                 toastMessage,
