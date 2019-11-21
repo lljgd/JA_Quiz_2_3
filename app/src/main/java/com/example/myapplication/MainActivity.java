@@ -25,8 +25,9 @@ public class MainActivity extends LoggingActivity {
     private int mCurrentIndex = 0;
     private int allQuestion = mQuestionBank.length;
     private int[] checkAnswer = new int[allQuestion];
-    private int sumAllAnswer;
-    private int sumTrueAnswer;
+    private int oneTrueAnswer = 2;
+    private int oneFalseAnswer = 1;
+    private int notAnswer = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,9 +37,6 @@ public class MainActivity extends LoggingActivity {
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_CURRENT_INDEX);
             checkAnswer = savedInstanceState.getIntArray(KEY_SAVE_ANSWER);
-        }
-        else {
-            Arrays.fill(checkAnswer, 0);
         }
 
         final TextView questionString = findViewById(R.id.question_string);
@@ -76,12 +74,12 @@ public class MainActivity extends LoggingActivity {
         checkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               sumAllAnswer = 0;
-               sumTrueAnswer = 0;
+               int sumAllAnswer = 0;
+               int sumTrueAnswer = 0;
                for (int e: checkAnswer) {
-                   if (e != 0) {
+                   if (e != notAnswer) {
                        sumAllAnswer++;
-                       if (e == 2) {
+                       if (e == oneTrueAnswer) {
                            sumTrueAnswer++;
                        }
                    }
@@ -117,12 +115,12 @@ public class MainActivity extends LoggingActivity {
         int toastMessage;
         if (mCheck) {
             toastMessage = R.string.correct_toast;
-            checkAnswer[mCurrentIndex] = 2;
+            checkAnswer[mCurrentIndex] = oneTrueAnswer;
         }
         else {
             toastMessage = R.string.incorrect_toast;
-            if (checkAnswer[mCurrentIndex] == 0) {
-                checkAnswer[mCurrentIndex] = 1;
+            if (checkAnswer[mCurrentIndex] == notAnswer) {
+                checkAnswer[mCurrentIndex] = oneFalseAnswer;
             }
         }
         Toast.makeText(
